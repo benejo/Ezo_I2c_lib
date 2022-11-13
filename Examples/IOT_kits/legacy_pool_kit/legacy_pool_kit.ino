@@ -22,7 +22,7 @@ const char * myWriteAPIKey = "XXXXXXXXXXXXXXXX";                 //Your ThingSpe
 Ezo_board PH = Ezo_board(99, "PH");           //create a PH circuit object, who's address is 99 and name is "PH"
 Ezo_board ORP = Ezo_board(98, "ORP");         //create an ORP circuit object who's address is 98 and name is "ORP"
 Ezo_board RTD = Ezo_board(102, "RTD");        //create an RTD circuit object who's address is 102 and name is "RTD"
-Ezo_board PMPL = Ezo_board(97, "DO");      //create an PMPL circuit object who's address is 109 and name is "DO"
+Ezo_board DO = Ezo_board(97, "DO");      //create an PMPL circuit object who's address is 109 and name is "DO"
 
 Ezo_board device_list[] = {   //an array of boards used for sending commands to all or specific boards
   PH,
