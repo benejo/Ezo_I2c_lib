@@ -22,13 +22,13 @@ const char * myWriteAPIKey = "XXXXXXXXXXXXXXXX";                 //Your ThingSpe
 Ezo_board PH = Ezo_board(99, "PH");           //create a PH circuit object, who's address is 99 and name is "PH"
 Ezo_board ORP = Ezo_board(98, "ORP");         //create an ORP circuit object who's address is 98 and name is "ORP"
 Ezo_board RTD = Ezo_board(102, "RTD");        //create an RTD circuit object who's address is 102 and name is "RTD"
-Ezo_board PMPL = Ezo_board(109, "PMPL");      //create an PMPL circuit object who's address is 109 and name is "PMPL"
+Ezo_board PMPL = Ezo_board(97, "DO");      //create an PMPL circuit object who's address is 109 and name is "DO"
 
 Ezo_board device_list[] = {   //an array of boards used for sending commands to all or specific boards
   PH,
   ORP,
   RTD,
-  PMPL
+  DO
 };
 
 Ezo_board* default_board = &device_list[0]; //used to store the board were talking to
@@ -175,8 +175,10 @@ void step2() {
   if ((RTD.get_error() == Ezo_board::SUCCESS) && (RTD.get_last_received_reading() > -1000.0)) { //if the temperature reading has been received and it is valid
     PH.send_cmd_with_num("T,", RTD.get_last_received_reading());
     ThingSpeak.setField(3, String(RTD.get_last_received_reading(), 2));                 //assign temperature readings to the third column of thingspeak channel
+    DO.send_cmd_with_num("T,", RTD.get_last_received_reading());
   } else {                                                                                      //if the temperature reading is invalid
     PH.send_cmd_with_num("T,", 25.0);                                                           //send default temp = 25 deg C to PH sensor
+    DO.send_cmd_with_num("T,", 25.0);
     ThingSpeak.setField(3, String(25.0, 2));                 //assign temperature readings to the third column of thingspeak channel
   }
 
@@ -188,6 +190,7 @@ void step3() {
   //to let the library know to parse the reading
   PH.send_read_cmd();
   ORP.send_read_cmd();
+  DO.send_read_cmd();
 }
 
 void step4() {
@@ -200,8 +203,15 @@ void step4() {
   if (ORP.get_error() == Ezo_board::SUCCESS) {                                          //if the ORP reading was successful (back in step 1)
     ThingSpeak.setField(2, String(ORP.get_last_received_reading(), 0));                 //assign ORP readings to the second column of thingspeak channel
   }
+  
+  Serial.print("  ");
+  receive_and_print_reading(DO);             //get the reading from the DO circuit
+  if (DO.get_error() == Ezo_board::SUCCESS) {                                          //if the DO reading was successful (back in step 1)
+    ThingSpeak.setField(4, String(DO.get_last_received_reading(), 2));                 //assign DO readings to the fourth column of thingspeak channel
+  }
+  
   Serial.println();
-  pump_function(PUMP_BOARD, EZO_BOARD, COMPARISON_VALUE, PUMP_DOSE, IS_GREATER_THAN);
+  //pump_function(PUMP_BOARD, EZO_BOARD, COMPARISON_VALUE, PUMP_DOSE, IS_GREATER_THAN);
 }
 
 void start_datalogging() {
@@ -250,6 +260,10 @@ void print_help() {
   Serial.println(F("ph:cal,low,4     calibrate to pH 4                                         "));
   Serial.println(F("ph:cal,high,10   calibrate to pH 10                                        "));
   Serial.println(F("ph:cal,clear     clear calibration                                         "));
+  Serial.println(F("                                                                           "));
+  Serial.println(F("do:cal               calibrate DO probe to the air                         "));
+  Serial.println(F("do:cal,0             calibrate DO probe to O dissolved oxygen              "));
+  Serial.println(F("do:cal,clear         clear calibration                                     "));
   Serial.println(F("                                                                           "));
   Serial.println(F("orp:cal,225          calibrate orp probe to 225mV                          "));
   Serial.println(F("orp:cal,clear        clear calibration                                     "));
